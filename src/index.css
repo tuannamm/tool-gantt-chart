@@ -1,0 +1,124 @@
+/* App chrome only: colours, type and controls come from @dgtx/ui-frek tokens and components. */
+body { margin: 0; background: var(--dtx-bg); color: var(--dtx-fg); font-family: var(--dtx-font); }
+h1 { font-size: var(--dtx-text-lg); margin: 0; }
+
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 8px 16px; background: var(--dtx-surface); border-bottom: 1px solid var(--dtx-border);
+}
+.brand { display: flex; align-items: center; gap: 4px; }
+/* Follows the same rule as the kit's tokens: an explicit data-theme wins, else the OS setting. */
+.logo-dark { display: none; }
+:root[data-theme="dark"] .logo-light { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-light { display: none; }
+  :root:not([data-theme="light"]) .logo-dark { display: block; }
+}
+.actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.sep { width: 1px; height: 24px; background: var(--dtx-border); margin: 0 8px; }
+
+.layout { flex: 1; display: grid; grid-template-columns: minmax(0, 580px) minmax(0, 1fr); min-height: 0; }
+.layout--full { grid-template-columns: minmax(0, 1fr); }
+.panel[hidden] { display: none; }
+.panel::-webkit-scrollbar { display: none; }
+/* Scrolls by wheel, touch and keyboard; the bar itself is hidden on request. */
+.panel { scrollbar-width: none; overflow: auto; padding: 16px; border-right: 1px solid var(--dtx-border); }
+/* Only the viewport scrolls; the toolbar above it stays put. */
+.preview { display: flex; flex-direction: column; min-height: 0; background: var(--dtx-surface-2); }
+.viewport { flex: 1; min-height: 0; overflow: auto; padding: 0 16px 16px; }
+.viewport:focus-visible { outline-offset: -2px; }
+/* The chart is printed paper: it stays white in both themes, like the exported image. */
+.sheet { background: #fff; /* theme-fixed: export paper */ border: 1px solid var(--dtx-border); border-radius: var(--dtx-radius-sm); margin-inline: auto; cursor: grab; user-select: none; }
+.sheet.panning { cursor: grabbing; }
+.chart { display: block; width: 100%; height: auto; }
+.zoom { display: flex; gap: 4px; }
+.previewbar-end { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.template-select { width: 280px; max-width: 100%; min-width: 0; }
+.previewbar { display: flex; justify-content: space-between; align-items: center; gap: 4px; padding: 8px 16px; }
+.zoom-pct { min-width: 4ch; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 960px) {
+  .app { height: auto; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .panel { border-right: 0; }
+  .preview { order: -1; }
+}
+
+.editor { display: flex; flex-direction: column; gap: 16px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+/* Compact editor fields: small muted labels over 32px controls, so a task fits in two short lines. */
+.editor .dtx-field { gap: 4px; }
+.editor .dtx-field__label { font-size: var(--dtx-text-xs); color: var(--dtx-fg-muted); }
+.editor :is(input.dtx-input, .dtx-select-trigger) { height: 32px; min-height: 32px; }
+/* Fine pointers only: on touch the kit keeps 16px, or iOS zooms into the field. */
+@media (any-pointer: fine) { .editor :is(.dtx-input, .dtx-select-trigger) { font-size: var(--dtx-text-sm); } }
+.task { border-top: 1px solid var(--dtx-border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.row.task { flex-direction: row; }
+.row > .grow { flex: 1 1 120px; min-width: 0; }
+.row > .pic { flex: 0 1 120px; min-width: 0; }
+.row > .est { flex: 0 0 96px; }
+.row > .date { flex: 0 0 156px; }
+.row > .range { flex: 0 0 236px; min-width: 0; }
+.row > .kind { flex: 0 0 160px; }
+/* Milestone colour picker chip; the hairline keeps dark hues visible on a dark surface. */
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 30%, transparent); }
+.phase-list { position: relative; }
+/* Laid over the phase title while renaming; centred on the title line. */
+.phase-list > .rename { position: absolute; z-index: 1; translate: 0 -50%; height: 30px; min-height: 0; padding-block: 0; font-weight: 500; }
+/* Rows can be picked up: grab cursor and a tint on hover, a stronger tint while a press is held. */
+.phase-list .task { margin-inline: -8px; padding: 8px; border-radius: 0 0 var(--dtx-radius-sm) var(--dtx-radius-sm); transition: background-color 150ms ease-out; }
+.phase-list :is(.task, .task label, .dtx-collapse__header, .dtx-collapse__trigger) { cursor: grab; }
+.phase-list .task :is(input, textarea) { cursor: text; }
+/* Inline-edit fields read as plain text: a field shows its box only on hover, and becomes an input when clicked. */
+.inline-edit :is(input.dtx-input, textarea, .dtx-select-trigger) { padding-inline: 6px; }
+.inline-edit :is(input.dtx-input, textarea, .dtx-select-trigger):not(:hover, :focus-visible, [data-popup-open], [data-invalid], [aria-invalid="true"]) { border-color: transparent; background: transparent; box-shadow: none; text-overflow: ellipsis; }
+.inline-edit :is(input.dtx-input, textarea, .dtx-select-trigger):is(:hover, :focus-visible) { background: var(--dtx-surface); }
+.inline-edit .dtx-select-trigger:not(:hover, :focus-visible, [data-popup-open]) .dtx-select-chev { opacity: 0; }
+.inline-edit .dtx-date:not(:hover, :focus-within) .dtx-date__btn { opacity: 0; }
+.inline-edit textarea { resize: none; padding-block: 5px 6px; } /* first line sits on the 32px inputs' baseline */
+.inline-edit .dtx-field__label { padding-inline-start: 7px; }
+.inline-edit .name input { font-weight: 600; }
+/* While a task is dragged, every task shrinks to a one-line summary so drop targets sit close together. */
+.task-brief { display: none; }
+.hold-dragging .phase-list .task > .row { display: none; }
+.hold-dragging .phase-list .task > .task-brief { display: flex; gap: 6px 12px; align-items: baseline; min-width: 0; padding-inline: 7px; font-size: var(--dtx-text-sm); color: var(--dtx-fg-muted); white-space: nowrap; }
+.task-brief b { overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; color: var(--dtx-fg); font-weight: 600; }
+.task-brief span { flex: none; }
+.task-brief span:last-child { font-variant-numeric: tabular-nums; }
+.phase-list .task:hover { background: var(--dtx-surface-2); }
+.phase-list [data-pressing] { background: color-mix(in oklch, var(--dtx-primary) 12%, var(--dtx-surface)); transition: background-color 220ms ease-out 80ms; }
+/* The row being dragged stays as a dashed placeholder, so the drop line reads as its destination. */
+.task[data-dragging], .dtx-collapse__item:has(.phase-title[data-dragging]) > .dtx-collapse__header { opacity: .45; outline: 1px dashed var(--dtx-primary); outline-offset: -1px; }
+.dtx-collapse__item:has(.phase-title[data-dragging]) > .dtx-collapse__panel { opacity: .45; }
+/* Long press picks a row up: no iOS callout over it, and no text selection or I-beam while dragging. */
+.phase-list .task, .phase-list .dtx-collapse__header, [data-mi] { -webkit-touch-callout: none; touch-action: pan-y; }
+.hold-dragging, .hold-dragging *, .swiping, .swiping * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+/* The lifted copy of the held row (see useHoldDrag). */
+.drag-ghost { position: fixed; top: 0; left: 0; z-index: 10; pointer-events: none; color: var(--dtx-fg); background: var(--dtx-surface); outline: 1px solid var(--dtx-primary); border-radius: var(--dtx-radius-sm); box-shadow: var(--dtx-shadow-pop); opacity: .95; scale: 1.02; transition: scale 150ms ease-out; }
+@starting-style { .drag-ghost { scale: 1; } }
+/* Swipe to delete: the row slides left over a red strip that names what releasing does. */
+.phase-list .dtx-collapse__item, [data-mi] { position: relative; }
+[data-swipe] { z-index: 1; background: var(--dtx-surface); }
+[data-swipe]::after { content: attr(data-swipe); position: absolute; inset-block: 0; left: 100%; width: var(--swipe-x); display: flex; align-items: center; justify-content: flex-end; padding-inline: 16px; overflow: hidden; white-space: nowrap; font-weight: 500; color: #fff; /* theme-fixed: white on the kit's solid danger fill, 5.63:1 */ background: var(--dtx-red); border-radius: 0 var(--dtx-radius-sm) var(--dtx-radius-sm) 0; }
+/* A phase can be tall when open: keep its label level with the header. */
+.dtx-collapse__item[data-swipe]::after { align-items: flex-start; padding-top: 20px; }
+[data-swipe][data-armed]::after { background: var(--dtx-red-hover); font-weight: 600; }
+[data-settling] { transition: translate 200ms ease-out; }
+.drag-ghost.task { padding: 8px; border-top: 0; }
+@media (prefers-reduced-motion: reduce) { .drag-ghost { scale: none; transition: none; } }
+/* Drop indicator: a bar with a ring at its start and a tag naming the destination, gliding between targets. */
+/* Above the drag ghost (z 10): the ghost follows the pointer, which sits right on the line. */
+.drop-line { position: absolute; z-index: 11; inset-inline-end: 0; height: 3px; translate: 0 -50%; border-radius: 2px; background: var(--dtx-primary-strong); pointer-events: none; transition: top 120ms ease-out, inset-inline-start 120ms ease-out; }
+.drop-line::before { content: ''; position: absolute; inset-inline-start: -5px; top: 50%; translate: 0 -50%; width: 11px; height: 11px; border-radius: 50%; background: var(--dtx-surface); box-shadow: inset 0 0 0 3px var(--dtx-primary-strong); }
+/* White on primary-strong, 5.1:1 in both themes; the kit's base primary is only 4.0:1. */
+.drop-tag { position: absolute; inset-inline-end: 8px; top: 50%; translate: 0 -50%; max-width: calc(100% - 24px); padding: 2px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--dtx-text-xs); font-weight: 600; line-height: 1.4; color: var(--dtx-on-primary); background: var(--dtx-primary-strong); border-radius: 999px; box-shadow: 0 0 0 2px var(--dtx-surface); }
+/* A task headed into a phase lights that phase up, so a drop into the wrong one is visible before release. */
+.dtx-collapse__item:has(.phase-title[data-drop-into]) { background: color-mix(in oklch, var(--dtx-primary) 9%, var(--dtx-surface)); box-shadow: inset 0 0 0 2px var(--dtx-primary-strong); border-radius: var(--dtx-radius-sm); transition: background-color 120ms ease-out, box-shadow 120ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .drop-line, .dtx-collapse__item:has(.phase-title[data-drop-into]) { transition: none; } }
+.row > button { align-self: flex-end; }
+.err-text { color: var(--dtx-tone-err); }
+.muted { margin: 0; color: var(--dtx-fg-muted); font-size: var(--dtx-text-sm); }
